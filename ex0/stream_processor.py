@@ -115,7 +115,7 @@ class LogProcessor(DataProcessor):
                 message = ' '.join(values[1:])
                 return f"[ALERT] {log_level} level detected :{message}"
             else:
-                return f"Processed data {result} is not valid log data"
+                return f"{result} is not valid log data"
         else:
             return f"Processed data << {result} >> is not valid log data"
 
@@ -172,7 +172,17 @@ def main() -> None:
             )
             print(f"Output: {output}")
         print()
+
     print("=== Polymorphic Processing Demo ===")
+    mixed_data = [
+        ([1, 2, 3], NumericProcessor()),
+        ("Hello Nexus", TextProcessor()),
+        ("INFO: System ready", LogProcessor())
+    ]
+
+    for i, (data, processor) in enumerate(mixed_data, 1):
+        res = processor.process(data)
+        print(f"Result {i}: {res}")
 
 
 if __name__ == "__main__":
