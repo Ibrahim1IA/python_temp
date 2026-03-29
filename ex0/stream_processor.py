@@ -2,7 +2,7 @@ from typing import Any, List, Dict, Union
 from abc import ABC, abstractmethod
 
 
-class DataProcessor:
+class DataProcessor(ABC):
 
     @abstractmethod
     def process(self, data: Any) -> str:
@@ -15,12 +15,17 @@ class DataProcessor:
     def format_output(self, result: str) -> str:
         pass
 
+
 class NumericProcessor(DataProcessor):
     def process(self, data: Any) -> str:
-        return f"{data}"
+        if isinstance(data, List):
+            return f"{data}"
+        elif isinstance(data, Dict):
+            return f"{list(data.values())}"
+        else:
+            return f"{data}"
 
     def validate(self, data: Any) -> bool:
-        print(type(data))
         if isinstance(data, List):
             for item in data:
                 if not isinstance(item, (int, float)):
@@ -28,7 +33,6 @@ class NumericProcessor(DataProcessor):
             return True
         elif isinstance(data, Dict):
             for value in data.values():
-                print(value)
                 if not isinstance(value, (int, float)):
                     return False
             return True
@@ -38,17 +42,118 @@ class NumericProcessor(DataProcessor):
             return False
 
     def format_output(self, result: str) -> str:
-        if not result.startswith('[') and not result.startswith('{'):
-            return f"Processed 1 numeric value, value={result}"
-        values = result[1:-1].split(', ')
-        sum_value = sum(int(item) for item in values)
-        return f"Processed {len(values)} numeric values, sum={sum_value}"
+        valid: bool = True
+        for char in result:
+            if char.isdigit() or char in ['[', ']', ' ', ',', '.']:
+                continue
+            else:
+                valid = False
+                break
+        if valid:
+            if not result.startswith('['):
+                return f"Processed 1 numeric value, value={result}"
+            else:
+                values: List[str] = result[1:-1].split(', ')
+                sum_value: float = sum(float(item) for item in values)
+                average_value: float = sum_value / len(values) if values else 0
+                return f"Processed {len(values)} numeric values, sum={sum_value if sum_value % 1 != 0 else int(sum_value)}, average={average_value:.1f}"
+        else:
+            return f"Processed data {result}"
 
-testt = NumericProcessor()
-value = {10, 4, 5}
-proc = testt.process(value)
-print(proc)
-valid = testt.validate(value)
-print(valid)
-output = testt.format_output(proc)
-print(output)
+
+class TextProcessor(DataProcessor):
+    def process(self, data: Any) -> str:
+        if isinstance(data, str):
+            return f"'{data}'"
+        else:
+            return f"{data}"
+
+    def validate(self, data: Any) -> bool:
+        if isinstance(data, str):
+            return True
+        else:
+            return False
+
+    def format_output(self, result: str) -> str:
+        if self.validate(result):
+            if result.startswith("'") and result.endswith("'"):
+                result = result[1:-1]
+                return \
+                    f"Processed text: {len(result)} characters,"\
+                    f" {result.count(' ')+1} words"
+            else:
+                return f"Processed data {result} is not valid text data"
+        else:
+            return f"Processed data {result} is not valid text data"
+
+
+class LogProcessor(DataProcessor):
+    def process(self, data: Any) -> str:
+        if isinstance(data, str):
+            return f"'{data}'"
+        else:
+            return f"{data}"
+        
+    def validate(self, data: Any) -> bool:
+        if isinstance(data, str):
+            values = data.split(' ')
+            if ':' in values[0]:
+                return True
+            else:
+                return False
+        else:
+            return False
+        
+    def format_output(self, result: str) -> str:
+        if self.validate(result):
+            if result.startswith("'") and result.endswith("'"):
+                result = result[1:-1]
+                values = result.split(' ')
+                log_level = values[0][0:-1]
+                message = ' '.join(values[1:])
+                return f"[ALERT] {log_level} level detected :{message}"
+            else:
+                return f"Processed data {result} is not valid log data"
+        else:
+            return f"Processed data << {result} >> is not valid log data"
+        
+
+def main() -> None:
+    numeric_processor = NumericProcessor()
+    text_processor = TextProcessor()
+    log_processor = LogProcessor()
+
+    processors = ["Numeric", "Text", "Log"]
+    number_data = [1, 2, 3, 4, 5]
+    text_data = "Hello world"
+    log_data = "ERROR: Something went wrong"
+    print(" === CODE NEXUS - DATA PROCESSOR FOUNDATION ===")
+    for processor_type in processors:
+        print(f"Initializing {processor_type} Processor...")
+        if processor_type == "Numeric":
+            result = numeric_processor.process(number_data)
+            is_valid = numeric_processor.validate(number_data)
+            output = numeric_processor.format_output(result)
+            print(f"Processing data : {result}")
+            print(f"Validation : {"Numeric data verified" if is_valid else "Numeric data invalid" }")
+            print(f"Output: {output}")
+        elif processor_type == "Text":
+            result = text_processor.process(text_data)
+            is_valid = text_processor.validate(text_data)
+            output = text_processor.format_output(result)
+            print(f"Processing data : {result}")
+            print(f"Validation : {"Text data verified" if is_valid else "Text data invalid" }")
+            print(f"Output: {output}")
+        elif processor_type == "Log":
+            result = log_processor.process(log_data)
+            is_valid = log_processor.validate(log_data)
+            output = log_processor.format_output(result)
+            print(f"Processing data : {result}")
+            print(f"Validation : {"Log entry verified" if is_valid else "Log entry invalid" }")
+            print(f"Output: {output}")
+        print()
+    print("=== Polymorphic Processing Demo ===")
+
+
+if __name__ == "__main__":
+    main()
