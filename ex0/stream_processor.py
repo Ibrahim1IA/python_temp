@@ -80,7 +80,7 @@ class LogProcessor(DataProcessor):
         prefix = "[ALERT]" if level == "ERROR" else "[INFO]"
         return f"{prefix} {level} level detected: {message}"
 
-    def format_output(self, result: str) -> str: 
+    def format_output(self, result: str) -> str:
         return result
 
 

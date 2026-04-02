@@ -225,9 +225,10 @@ def main() -> None:
     print("Creating Data Processing Pipeline...")
     for i, data in enumerate(data_processed):
         if isinstance(data, dict):
-            print(f"Stage {i+1}: - "
-                  f"{'\n\t - '.join(
-                        f'{key}: {value}' for key, value in data.items())}")
+            space: str = "\n\t - "
+            result: str = \
+                space.join(f'{key}: {value}' for key, value in data.items())
+            print(f"Stage {i+1}: - {result}")
         else:
             print(f"Stage {i+1}: - {data}")
         print()
@@ -270,7 +271,7 @@ def main() -> None:
     chain.process_data({"sensor": "temp", "value": 23.5, "unit": "C"})
     chain.process_data("user,action,timestamp")
     chain.process_data([21.0, 22.5, 23.0, 21.8])
-
+    print()
     size = len(chain.pipelines)
     print(f"Chain result: 100 records processed through {size}-stage pipeline")
     print("Performance: 95% efficiency, 0.2s total processing time\n")
