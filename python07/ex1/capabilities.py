@@ -1,0 +1,19 @@
+from abc import ABC, abstractmethod
+
+
+class HealCapability(ABC):
+    @abstractmethod
+    def heal(self, target: str = "itself") -> str:
+        pass
+
+
+class TransformCapability(ABC):
+    _is_transformed: bool = False
+
+    @abstractmethod
+    def transform(self) -> str:
+        pass
+
+    @abstractmethod
+    def revert(self) -> str:
+        pass
